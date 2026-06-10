@@ -264,8 +264,7 @@ a {
   flex-wrap: wrap;
   gap: 28px;
   margin-top: 30px;
-  padding-top: 22px;
-  border-top: var(--rule);
+  padding-top: 4px;
 }
 .fact .l {
   font-family: var(--font-mono);
@@ -852,8 +851,7 @@ a {
 /* ── Also on the go — pinned to the bottom so covers align with the hero cover ── */
 .alsoreading {
   margin-top: auto;
-  padding-top: 26px;
-  border-top: var(--rule);
+  padding-top: 28px;
 }
 .alsoreading > .l {
   font-family: var(--font-mono);
