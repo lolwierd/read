@@ -1,4 +1,4 @@
-# Kobo Dashboard
+# Read
 
 A personal reading dashboard for Kobo and KOReader data.
 
