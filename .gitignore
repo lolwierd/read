@@ -1,0 +1,34 @@
+node_modules/
+.wrangler/
+.claude/
+.DS_Store
+
+# Build output
+dist/
+dist-tools/
+.svelte-kit/
+.vite/
+coverage/
+
+# Generated dashboard data and private reading artifacts
+apps/read/public/covers/
+apps/read/public/record*.json
+apps/read/dist/
+apps/read/dist-tools/
+fixtures/real/
+
+# Internal planning notes
+PLAN.md
+TECH-DESIGN.md
+WEBDAV-SYNC-DIRECTION.md
+FRONTEND-IGNORE-RULES.md
+mockup.html
+
+# Local secrets and device sync files
+*.sqlite3
+*.sqlite3-shm
+*.sqlite3-wal
+*.log
+*.local
+.env
+.env.*

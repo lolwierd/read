@@ -1,0 +1,14 @@
+name = "read-web"
+compatibility_date = "2025-01-01"
+compatibility_flags = ["nodejs_compat"]
+account_id = "YOUR_CLOUDFLARE_ACCOUNT_ID"
+workers_dev = false
+main = ".svelte-kit/cloudflare/_worker.js"
+assets = { directory = ".svelte-kit/cloudflare", binding = "ASSETS" }
+routes = [{ pattern = "read.lolwierd.com", custom_domain = true }]
+
+# Read-only access to the same D1 the MCP writes.
+[[d1_databases]]
+binding = "DB"
+database_name = "read-db"
+database_id = "1845379c-c0bb-45b1-b537-aabe275b1372"

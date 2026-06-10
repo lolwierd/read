@@ -1,0 +1,12 @@
+{
+  "name": "read",
+  "short_name": "read",
+  "description": "A private record of everything read on the Kobo.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#e8e4d9",
+  "theme_color": "#15695b",
+  "icons": [
+    { "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}

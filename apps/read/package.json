@@ -1,0 +1,31 @@
+{
+  "name": "@read/read",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "fixture": "bun run scripts/build-fixture-record.ts",
+    "covers": "bun run scripts/sync-calibre-covers.ts --source fixture --target local --web",
+    "dev": "vite dev --port 5184 --strictPort",
+    "build": "vite build",
+    "test": "bun test shared/*.test.ts",
+    "preview": "vite preview --port 5184 --strictPort",
+    "typecheck": "tsc --noEmit",
+    "record": "bun run scripts/build-record.ts",
+    "build:record": "bun build --compile --target=bun-linux-arm64 scripts/build-record.ts --outfile dist-tools/build-record"
+  },
+  "dependencies": {
+    "@read/core": "workspace:*",
+    "motion": "^11.15.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.3.14",
+    "@types/react": "^19.0.2",
+    "@types/react-dom": "^19.0.2",
+    "@vitejs/plugin-react": "^5.0.0",
+    "typescript": "^5.9.3",
+    "vite": "^8.0.14"
+  }
+}

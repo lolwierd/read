@@ -1,0 +1,9 @@
+[Unit]
+Description=Rebuild the read dashboard from the synced KOReader stats DB
+
+[Service]
+Type=oneshot
+User=ubuntu
+# let KOReader's WebDAV write (db + WAL) settle before snapshotting
+ExecStartPre=/bin/sleep 3
+ExecStart=/home/ubuntu/read/refresh.sh

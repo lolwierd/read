@@ -1,0 +1,17 @@
+# Append these two blocks to /etc/caddy/Caddyfile on miso (the `(cloudflare)` snippet for
+# DNS-01 TLS already exists there). Additive — touches none of the existing sites.
+# Then: `caddy validate --config /etc/caddy/Caddyfile && sudo systemctl reload caddy`.
+
+# ── read — static reading-stats dashboard (record.json built by cron) ──
+read.lolwierd.com {
+	import cloudflare
+	encode gzip
+	root * /home/ubuntu/read/site
+	file_server
+}
+
+# ── WebDAV target for KOReader "Reading statistics → Cloud sync" ──
+dav.lolwierd.com {
+	import cloudflare
+	reverse_proxy 127.0.0.1:6065
+}

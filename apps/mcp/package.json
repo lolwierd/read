@@ -1,0 +1,27 @@
+{
+  "name": "@read/mcp",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit",
+    "deploy": "wrangler deploy",
+    "dev": "wrangler dev"
+  },
+  "devDependencies": {
+    "@cloudflare/vitest-pool-workers": "^0.16.9",
+    "@cloudflare/workers-types": "^4.20260526.1",
+    "@types/node": "^25.9.1",
+    "vitest": "^4.1.7",
+    "wrangler": "^4.94.0"
+  },
+  "dependencies": {
+    "@cloudflare/workers-oauth-provider": "^0.7.0",
+    "@read/core": "workspace:*",
+    "hono": "^4.12.23",
+    "zod": "^3.25.76",
+    "zod-to-json-schema": "^3.25.2"
+  }
+}

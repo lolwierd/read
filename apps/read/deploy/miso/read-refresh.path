@@ -1,0 +1,10 @@
+[Unit]
+Description=Watch the WebDAV stats DB and rebuild read when KOReader syncs
+
+[Path]
+# fires when KOReader uploads a new statistics.sqlite3 over WebDAV
+PathModified=/home/ubuntu/read/webdav/statistics.sqlite3
+Unit=read-refresh.service
+
+[Install]
+WantedBy=multi-user.target
