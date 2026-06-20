@@ -20,7 +20,7 @@
   "dependencies": {
     "@cloudflare/workers-oauth-provider": "^0.7.0",
     "@read/core": "workspace:*",
-    "hono": "^4.12.23",
+    "hono": "^4.12.25",
     "zod": "^3.25.76",
     "zod-to-json-schema": "^3.25.2"
   }
