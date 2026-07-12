@@ -172,6 +172,11 @@ a {
 .ledger-head nav a:hover,
 .ledger-head nav a:focus-visible { color: var(--ink); }
 
+.ledger-foot {
+  text-align: center;
+  padding: 40px 0 20px;
+}
+
 .section {
   padding: clamp(34px, 6vw, 60px) 0;
   border-top: var(--rule);

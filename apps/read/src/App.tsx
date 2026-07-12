@@ -11,6 +11,7 @@ import { RhythmSection } from "./components/RhythmSection";
 import { Shelf } from "./components/Shelf";
 import { BookModal } from "./components/BookModal";
 import { LedgerHead } from "./components/LedgerHead";
+import { LedgerFoot } from "./components/LedgerFoot";
 import { WeekStory } from "./components/WeekStory";
 import { AnnualEdition } from "./components/AnnualEdition";
 
@@ -82,6 +83,7 @@ export default function App() {
         <AnnualEdition view={view} />
       </Reveal>
       <BookModal view={view} md5={selected} onClose={() => setSelected(null)} />
+      <LedgerFoot view={view} />
     </main>
   );
 }

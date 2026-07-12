@@ -33,3 +33,6 @@ mockup.html
 *.local
 .env
 .env.*
+
+# Personal one-command deployment wrapper
+/deploy.sh
