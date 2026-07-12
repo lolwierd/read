@@ -15,6 +15,7 @@ apps/read/public/covers/
 apps/read/public/record*.json
 apps/read/dist/
 apps/read/dist-tools/
+apps/read/finished-history.json
 fixtures/real/
 
 # Internal planning notes

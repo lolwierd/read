@@ -11,10 +11,16 @@ no custom plugin required.
 
 ## What it shows
 
-In Hand (cover + progress + fortnight sparkline) · The Tally (lead figure + derived pace
-stats) · The Week · The Year heatmap · The Hours (radial reading clock) · The Shelf
-(covers) · From the Margins (highlights — needs sidecars, see below). All numbers come from
-`@read/core` + `shared/stats.ts`, so dev and the miso build compute identically.
+In Hand (cover + progress + fortnight sparkline) · Today · The Tally · The Week with a
+plain-language comparison · the full Year heatmap · The Hours radial clock · The Rhythm ·
+The Shelf · a printable annual edition. Opening a book reveals its twelve-week calendar,
+reading fingerprint, sitting distribution, recent momentum, metadata, and a deliberately
+approximate finish range.
+
+The page shows when its record was last received, polls for new syncs, and keeps a cached
+copy for offline viewing. All numbers come from `@read/core` + `shared/stats.ts`, so dev and
+the miso build compute identically. Reading intervals are divided across the dates and
+hours they actually occupy.
 
 ## Architecture
 
@@ -33,8 +39,10 @@ Kobo / KOReader  ──WebDAV(HTTPS)──▶  miso:.../ledger/webdav/statistics
 - `shared/stats.ts` — `buildLedgerView()` = `@read/core` RecordView + ledger extras.
 - `shared/from-stats.ts` — raw `statistics.sqlite3` rows → core Books/Sessions (the adapter).
 - `shared/covers.ts` — Calibre match (ISBN→title) + AniList/Google Books web fallback.
+- `book-overrides.json` — tiny MD5-keyed corrections for ambiguous KOReader rows.
 - `scripts/build-record.ts` — **prod builder** (runs on miso): stats DB + Calibre → static
-  `record.json` + `covers/`. Compiles to a self-contained arm64 binary (`build:record`).
+  `record.json`, yearly snapshots, first-finished history, metadata, and `covers/`. Compiles to a self-contained
+  arm64 binary (`build:record`).
 - `scripts/build-fixture-record.ts` — dev data from the local fixture.
 - `scripts/sync-calibre-covers.ts` — dev: pull Calibre covers over ssh into `public/covers/`.
 - `deploy/miso/` — the WebDAV container, Caddy snippet, cron job, and `deploy.sh` runbook.
@@ -59,8 +67,8 @@ See **`deploy/miso/README.md`** — one script (`deploy/miso/deploy.sh`) pushes 
 arm64 builder to miso; a short one-time setup adds the WebDAV container, two Caddy blocks,
 and the cron. Then point KOReader's stats Cloud-sync at `https://dav.lolwierd.com`.
 
-## Note on highlights
+## Scope
 
-KOReader's built-in stats sync ships **only** `statistics.sqlite3` — no `.sdr` sidecars — so
-*From the Margins* stays on its empty state until an optional second sync is added. Everything
-else (hours, week, year, clock, shelf, progress) comes from the stats DB and is fully live.
+The active dashboard intentionally ignores `.sdr` sidecars and highlights. The old
+Cloudflare applications remain reference code; the root test, typecheck, and build commands
+cover the static dashboard and shared core used in production.

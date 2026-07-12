@@ -14,7 +14,7 @@ import type {
   WeekDay,
 } from "./types.js";
 import { spineColor, coverUrlForIsbn } from "./covers.js";
-import { addDays, dayInTz, READING_TZ, todayInTz, weekdayLabel } from "./time.js";
+import { addDays, dayInTz, READING_TZ, splitInterval, todayInTz, weekdayLabel } from "./time.js";
 
 const STATUS_LABEL: Record<BookStatus, string> = {
   reading: "Reading",
@@ -45,6 +45,10 @@ export function toBookView(book: Book): BookView {
     coverFallback: spineColor(book.md5),
     currentChapter: book.current_chapter,
     lastOpen: book.last_open,
+    tags: book.tags ?? [],
+    publisher: book.publisher ?? null,
+    publishedYear: book.published_year ?? null,
+    seriesIndex: book.series_index ?? null,
   };
 }
 
@@ -52,7 +56,9 @@ export function toBookView(book: Book): BookView {
 export function minutesOnDay(sessions: Session[], day: string, tz: string = READING_TZ): number {
   let secs = 0;
   for (const s of sessions) {
-    if (dayInTz(s.start_time, tz) === day) secs += s.duration;
+    for (const bucket of splitInterval(s.start_time, s.duration, tz)) {
+      if (bucket.day === day) secs += bucket.seconds;
+    }
   }
   return Math.round(secs / 60);
 }
@@ -61,8 +67,9 @@ export function minutesOnDay(sessions: Session[], day: string, tz: string = READ
 export function buildWeek(sessions: Session[], today: string, tz: string = READING_TZ): WeekDay[] {
   const byDay = new Map<string, number>();
   for (const s of sessions) {
-    const d = dayInTz(s.start_time, tz);
-    byDay.set(d, (byDay.get(d) ?? 0) + s.duration);
+    for (const bucket of splitInterval(s.start_time, s.duration, tz)) {
+      byDay.set(bucket.day, (byDay.get(bucket.day) ?? 0) + bucket.seconds);
+    }
   }
   const out: WeekDay[] = [];
   for (let i = 6; i >= 0; i--) {
@@ -83,7 +90,7 @@ export function buildWeek(sessions: Session[], today: string, tz: string = READI
 export function streakDays(sessions: Session[], today: string, tz: string = READING_TZ): number {
   const active = new Set<string>();
   for (const s of sessions) {
-    if (s.duration > 0) active.add(dayInTz(s.start_time, tz));
+    for (const bucket of splitInterval(s.start_time, s.duration, tz)) active.add(bucket.day);
   }
   if (active.size === 0) return 0;
   // Anchor at today if read today, else yesterday (grace), else the streak is dead.

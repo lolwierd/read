@@ -93,15 +93,31 @@ function ReadStatsAutoSync:triggerSync(reason, manual)
         end
         return
     end
-    if not manual and not NetworkMgr:isConnected() then
+    if not NetworkMgr:isOnline() then
+        if manual then
+            UIManager:show(InfoMessage:new({
+                text = _("Connecting Wi-Fi before sync..."),
+                timeout = 2,
+            }))
+            NetworkMgr:runWhenOnline(function()
+                self:triggerSync(reason, true)
+            end)
+        end
         return
     end
 
-    local now = os.time()
-    self.settings:saveSetting("last_attempt", now)
-    self.settings:saveSetting("last_triggered", now)
-    self.settings:flush()
+    if not manual then
+        local now = os.time()
+        self.settings:saveSetting("last_attempt", now)
+        self.settings:saveSetting("last_triggered", now)
+        self.settings:flush()
+    end
 
+    -- Reading history is append-only for this single-device ledger. KOReader's cached
+    -- three-way merge treats metadata edits (title/author) as book deletion because its
+    -- stock identity includes mutable fields. Dropping the last-agreed cache makes this
+    -- sync a union merge, so changing metadata cannot erase the old page rows.
+    os.remove(DataStorage:getSettingsDir() .. "/statistics.sqlite3.sync")
     logger.info("readstatsautosync: triggering SyncBookStats (" .. tostring(reason) .. ")")
     UIManager:broadcastEvent(Event:new("SyncBookStats"))
 end

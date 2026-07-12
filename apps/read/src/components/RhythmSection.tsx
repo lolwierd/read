@@ -29,7 +29,7 @@ export function RhythmSection({ view }: { view: LedgerView }) {
     <>
       <Eyebrow num="07" title="The Rhythm" meta="how the reading falls" />
       <div className="rhythm">
-        <div className="dowbars">
+        <div className="dowbars" role="img" aria-label={weekday.map((minutes, index) => `${DOW[index]} ${hm(minutes)}`).join(", ")}>
           {weekday.map((m, i) => {
             const zero = m === 0;
             return (
@@ -39,6 +39,7 @@ export function RhythmSection({ view }: { view: LedgerView }) {
                     className={`dbar${zero ? " zero" : ""}${i === busiestDow ? " peak" : ""}`}
                     style={{ height: zero ? "3px" : `${Math.max(5, (m / max) * 100)}%` }}
                     title={`${DOW[i]} · ${hm(m)}`}
+                    aria-hidden="true"
                   />
                 </div>
                 <span className={`dlbl${i === busiestDow ? " peak" : ""}`}>{INI[i]}</span>

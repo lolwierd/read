@@ -6,6 +6,7 @@ import {
   buildRecordView,
   dayInTz,
   READING_TZ,
+  splitInterval,
   type Annotation,
   type Book,
   type RecordView,
@@ -24,6 +25,15 @@ export interface BookStat {
   firstDay: string | null;
   lastDay: string | null;
   trend: number[]; // minutes/day over the trailing 21 days
+  pagesTrend: number[]; // distinct pages/day over the trailing 30 days
+  calendar: CalendarDay[]; // trailing 12 weeks for the book portrait
+  timeOfDay: number[];
+  sittings: { count: number; longest: number; avg: number };
+  sittingBands: [number, number, number, number]; // <15, 15–30, 30–60, 60+ minutes
+  recentMinutes: number;
+  previousMinutes: number;
+  longestGap: number; // fully idle days between reading days
+  latestReturnGap: number;
 }
 
 export interface LedgerExtras {
@@ -32,7 +42,6 @@ export interface LedgerExtras {
   totalSessions: number; // count of page_stat_data rows
   booksTracked: number;
   booksFinished: number;
-  highlights: number;
   longestSession: number; // minutes, single sitting (one start_time row)
   avgSession: number; // minutes per session, 1dp
   firstDay: string | null; // earliest reading day
@@ -46,6 +55,13 @@ export interface LedgerExtras {
   busiestDow: number | null; // day-of-week (0=Sun) you read most
   longestStreak: number; // longest run of consecutive reading days, ever
   sittings: { count: number; longest: number; avg: number }; // real sittings (gap-clustered), minutes
+  weekComparison: {
+    currentMinutes: number;
+    previousMinutes: number;
+    activeDays: number;
+    previousActiveDays: number;
+    percentChange: number | null;
+  };
   today: {
     minutes: number;
     pages: number; // distinct pages turned today
@@ -74,17 +90,6 @@ export interface LedgerView extends RecordView {
 
 const round1 = (n: number): number => Math.round(n * 10) / 10;
 
-/** Hour-of-day (0..23) for a unix-seconds instant, in the reading timezone. */
-function hourInTz(epochSeconds: number, tz: string): number {
-  const parts = new Intl.DateTimeFormat("en-GB", {
-    hour: "2-digit",
-    hour12: false,
-    timeZone: tz,
-  }).formatToParts(new Date(epochSeconds * 1000));
-  const h = parts.find((p) => p.type === "hour")?.value ?? "0";
-  return Number(h) % 24;
-}
-
 /** Step a YYYY-MM-DD date string by ±days using UTC noon (DST-safe for date math). */
 function addDays(day: string, delta: number): string {
   const d = new Date(`${day}T12:00:00Z`);
@@ -107,22 +112,28 @@ function longestRun(days: Set<string>): number {
   return best;
 }
 
-/** Cluster page events into real sittings: a gap larger than GAP starts a new sitting. */
-function clusterSittings(sessions: Session[]): { count: number; longest: number; avg: number } {
+/** Cluster page events into real sittings. The pause begins at the previous event's end,
+ *  so spending half an hour on one page does not invent a new sitting. */
+function sittingLengths(sessions: Session[]): number[] {
   const GAP = 25 * 60; // seconds — a >25min pause ends a sitting
   const sorted = sessions.slice().sort((a, b) => a.start_time - b.start_time);
   const lengths: number[] = [];
   let cur = 0;
-  let prev = -Infinity;
+  let prevEnd = -Infinity;
   for (const s of sorted) {
-    if (s.start_time - prev > GAP && cur > 0) {
+    if (s.start_time - prevEnd > GAP && cur > 0) {
       lengths.push(cur);
       cur = 0;
     }
     cur += s.duration;
-    prev = s.start_time;
+    prevEnd = Math.max(prevEnd, s.start_time + s.duration);
   }
   if (cur > 0) lengths.push(cur);
+  return lengths;
+}
+
+function summarizeSittings(sessions: Session[]): { count: number; longest: number; avg: number } {
+  const lengths = sittingLengths(sessions);
   if (lengths.length === 0) return { count: 0, longest: 0, avg: 0 };
   const total = lengths.reduce((a, b) => a + b, 0);
   return {
@@ -141,18 +152,19 @@ export function computeExtras(
 ): LedgerExtras {
   const today = dayInTz(Math.floor(now.getTime() / 1000), tz);
 
-  // Per-day minutes (whole library) + time-of-day histogram, single pass.
+  // Per-day minutes + time-of-day histogram. Intervals are split at boundaries so a
+  // late-night page is represented on both days and in every hour it occupied.
   const minutesByDay = new Map<string, number>();
   const timeOfDay = new Array<number>(24).fill(0);
   let longestSec = 0;
   let firstDay: string | null = null;
   for (const s of sessions) {
-    const day = dayInTz(s.start_time, tz);
-    minutesByDay.set(day, (minutesByDay.get(day) ?? 0) + s.duration / 60);
-    const hr = hourInTz(s.start_time, tz);
-    timeOfDay[hr] = (timeOfDay[hr] ?? 0) + s.duration / 60;
+    for (const bucket of splitInterval(s.start_time, s.duration, tz)) {
+      minutesByDay.set(bucket.day, (minutesByDay.get(bucket.day) ?? 0) + bucket.seconds / 60);
+      timeOfDay[bucket.hour] = (timeOfDay[bucket.hour] ?? 0) + bucket.seconds / 60;
+      if (firstDay === null || bucket.day < firstDay) firstDay = bucket.day;
+    }
     if (s.duration > longestSec) longestSec = s.duration;
-    if (firstDay === null || day < firstDay) firstDay = day;
   }
 
   // Trailing 53 weeks, aligned so the last column ends today. Walk back to the most
@@ -181,31 +193,74 @@ export function computeExtras(
     const perDay = new Map<string, number>();
     for (const s of sessions) {
       if (s.book_md5 !== current.md5) continue;
-      const day = dayInTz(s.start_time, tz);
-      perDay.set(day, (perDay.get(day) ?? 0) + s.duration / 60);
+      for (const bucket of splitInterval(s.start_time, s.duration, tz)) {
+        perDay.set(bucket.day, (perDay.get(bucket.day) ?? 0) + bucket.seconds / 60);
+      }
     }
     for (let i = 13; i >= 0; i--) nowTrend.push(Math.round(perDay.get(addDays(today, -i)) ?? 0));
   }
 
   // Per-book detail for the click-through modal: minutes, distinct days, span, 21-day trend.
   const perBook = new Map<string, Map<string, number>>();
+  const perBookPages = new Map<string, Map<string, Set<number>>>();
+  const perBookHours = new Map<string, number[]>();
+  const perBookSessions = new Map<string, Session[]>();
   for (const s of sessions) {
-    const day = dayInTz(s.start_time, tz);
     let m = perBook.get(s.book_md5);
     if (!m) perBook.set(s.book_md5, (m = new Map()));
-    m.set(day, (m.get(day) ?? 0) + s.duration / 60);
+    let hours = perBookHours.get(s.book_md5);
+    if (!hours) perBookHours.set(s.book_md5, (hours = new Array<number>(24).fill(0)));
+    let ownSessions = perBookSessions.get(s.book_md5);
+    if (!ownSessions) perBookSessions.set(s.book_md5, (ownSessions = []));
+    ownSessions.push(s);
+    for (const bucket of splitInterval(s.start_time, s.duration, tz)) {
+      m.set(bucket.day, (m.get(bucket.day) ?? 0) + bucket.seconds / 60);
+      hours[bucket.hour] = (hours[bucket.hour] ?? 0) + bucket.seconds / 60;
+      let dayPages = perBookPages.get(s.book_md5);
+      if (!dayPages) perBookPages.set(s.book_md5, (dayPages = new Map()));
+      let pages = dayPages.get(bucket.day);
+      if (!pages) dayPages.set(bucket.day, (pages = new Set()));
+      pages.add(s.page);
+    }
   }
   const bookStats: Record<string, BookStat> = {};
   for (const [md5, perDay] of perBook) {
     const days = [...perDay.keys()].sort();
+    const gaps = days.slice(1).map((day, index) => {
+      const before = new Date(`${days[index]}T12:00:00Z`).getTime();
+      const after = new Date(`${day}T12:00:00Z`).getTime();
+      return Math.max(0, Math.round((after - before) / 86_400_000) - 1);
+    });
     const trend: number[] = [];
     for (let i = 20; i >= 0; i--) trend.push(Math.round(perDay.get(addDays(today, -i)) ?? 0));
+    const pagesTrend: number[] = [];
+    for (let i = 29; i >= 0; i--) pagesTrend.push(perBookPages.get(md5)?.get(addDays(today, -i))?.size ?? 0);
+    const bookCalendar: CalendarDay[] = [];
+    for (let i = 83; i >= 0; i--) {
+      const date = addDays(today, -i);
+      bookCalendar.push({ date, minutes: Math.round(perDay.get(date) ?? 0) });
+    }
+    const ownSessions = perBookSessions.get(md5) ?? [];
+    const lengths = sittingLengths(ownSessions).map((seconds) => seconds / 60);
+    const sittingBands: [number, number, number, number] = [0, 0, 0, 0];
+    for (const length of lengths) sittingBands[length < 15 ? 0 : length < 30 ? 1 : length < 60 ? 2 : 3]++;
+    const recentMinutes = Array.from({ length: 30 }, (_, i) => perDay.get(addDays(today, -i)) ?? 0).reduce((a, b) => a + b, 0);
+    const previousMinutes = Array.from({ length: 30 }, (_, i) => perDay.get(addDays(today, -30 - i)) ?? 0).reduce((a, b) => a + b, 0);
     bookStats[md5] = {
       minutes: Math.round([...perDay.values()].reduce((a, b) => a + b, 0)),
       days: perDay.size,
       firstDay: days[0] ?? null,
       lastDay: days[days.length - 1] ?? null,
       trend,
+      pagesTrend,
+      calendar: bookCalendar,
+      timeOfDay: (perBookHours.get(md5) ?? new Array<number>(24).fill(0)).map(Math.round),
+      sittings: summarizeSittings(ownSessions),
+      sittingBands,
+      recentMinutes: Math.round(recentMinutes),
+      previousMinutes: Math.round(previousMinutes),
+      longestGap: gaps.length ? Math.max(...gaps) : 0,
+      latestReturnGap: gaps[gaps.length - 1] ?? 0,
     };
   }
 
@@ -219,20 +274,41 @@ export function computeExtras(
   const busiestIdx = weekdayRounded.reduce((best, m, i) => (m > weekdayRounded[best]! ? i : best), 0);
   const busiestDow = weekdayRounded[busiestIdx]! > 0 ? busiestIdx : null;
   const longestStreak = longestRun(new Set(minutesByDay.keys()));
-  const sittings = clusterSittings(sessions);
+  const sittings = summarizeSittings(sessions);
+
+  const sumWindow = (from: number, to: number): number => {
+    let value = 0;
+    for (let i = from; i <= to; i++) value += minutesByDay.get(addDays(today, -i)) ?? 0;
+    return Math.round(value);
+  };
+  const activeWindow = (from: number, to: number): number => {
+    let value = 0;
+    for (let i = from; i <= to; i++) if ((minutesByDay.get(addDays(today, -i)) ?? 0) > 0) value++;
+    return value;
+  };
+  const currentWeek = sumWindow(0, 6);
+  const previousWeek = sumWindow(7, 13);
+  const weekComparison = {
+    currentMinutes: currentWeek,
+    previousMinutes: previousWeek,
+    activeDays: activeWindow(0, 6),
+    previousActiveDays: activeWindow(7, 13),
+    percentChange: previousWeek > 0 ? Math.round(((currentWeek - previousWeek) / previousWeek) * 100) : null,
+  };
 
   // Today.
-  const todaySessions = sessions.filter((s) => dayInTz(s.start_time, tz) === today);
-  const todaySit = clusterSittings(todaySessions);
-  const todayTimes = todaySessions.map((s) => s.start_time);
+  const todaySessions = sessions.filter((s) => splitInterval(s.start_time, s.duration, tz).some((b) => b.day === today));
+  const todaySit = summarizeSittings(todaySessions);
+  const todayStarts = todaySessions.map((s) => s.start_time).filter((t) => dayInTz(t, tz) === today);
+  const todayEnds = todaySessions.map((s) => s.start_time + s.duration).filter((t) => dayInTz(Math.max(0, t - 1), tz) === today);
   const today_ = {
-    minutes: Math.round(todaySessions.reduce((a, s) => a + s.duration, 0) / 60),
+    minutes: Math.round(minutesByDay.get(today) ?? 0),
     pages: new Set(todaySessions.map((s) => `${s.book_md5}#${s.page}`)).size,
     books: new Set(todaySessions.map((s) => s.book_md5)).size,
     sittings: todaySit.count,
     longestSitting: todaySit.longest,
-    firstAt: todayTimes.length ? clockInTz(Math.min(...todayTimes), tz) : null,
-    lastAt: todayTimes.length ? clockInTz(Math.max(...todayTimes), tz) : null,
+    firstAt: todaySessions.length ? (todayStarts.length ? clockInTz(Math.min(...todayStarts), tz) : "12:00 AM") : null,
+    lastAt: todaySessions.length ? (todayEnds.length ? clockInTz(Math.max(...todayEnds), tz) : "11:59 PM") : null,
   };
 
   return {
@@ -241,7 +317,6 @@ export function computeExtras(
     totalSessions: sessions.length,
     booksTracked: books.length,
     booksFinished: books.filter((b) => b.status === "finished").length,
-    highlights: annotations.length,
     longestSession: Math.round(longestSec / 60),
     avgSession: sessions.length ? round1(sessions.reduce((s, x) => s + x.duration, 0) / 60 / sessions.length) : 0,
     firstDay,
@@ -255,6 +330,7 @@ export function computeExtras(
     busiestDow,
     longestStreak,
     sittings,
+    weekComparison,
     today: today_,
   };
 }

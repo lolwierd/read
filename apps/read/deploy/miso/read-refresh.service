@@ -7,3 +7,8 @@ User=ubuntu
 # let KOReader's WebDAV write (db + WAL) settle before snapshotting
 ExecStartPre=/bin/sleep 3
 ExecStart=/home/ubuntu/read/refresh.sh
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=read-only
+ReadWritePaths=/home/ubuntu/read

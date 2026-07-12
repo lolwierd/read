@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import type { LedgerView } from "../lib/view";
 import { hm, monthOf, shortDate } from "../lib/format";
 import { Eyebrow } from "./bits";
@@ -30,17 +30,7 @@ export function YearGrid({ view }: { view: LedgerView }) {
   const daysRead = calendar.filter((d) => d.minutes > 0).length;
   const [tip, setTip] = useState<Tip | null>(null);
 
-  // Narrow screens can't fit a full year — show the trailing months instead (ending today,
-  // so the current month is always the last column).
-  const [weeks, setWeeks] = useState(53);
-  useEffect(() => {
-    const mq = window.matchMedia("(max-width: 560px)");
-    const apply = () => setWeeks(mq.matches ? 18 : 53);
-    apply();
-    mq.addEventListener("change", apply);
-    return () => mq.removeEventListener("change", apply);
-  }, []);
-  const shown = calendar.slice(-weeks * 7);
+  const shown = calendar;
 
   const lead = shown.length ? weekday(shown[0]!.date) : 0;
   const cells: ({ date: string; minutes: number } | null)[] = [
@@ -61,7 +51,7 @@ export function YearGrid({ view }: { view: LedgerView }) {
     }
   }
 
-  const show = (e: React.MouseEvent, c: { date: string; minutes: number }) => {
+  const show = (e: React.MouseEvent | React.FocusEvent, c: { date: string; minutes: number }) => {
     const host = (e.currentTarget.closest(".year") as HTMLElement).getBoundingClientRect();
     const r = e.currentTarget.getBoundingClientRect();
     const x = r.left - host.left + r.width / 2;
@@ -82,7 +72,7 @@ export function YearGrid({ view }: { view: LedgerView }) {
             {tip.text}
           </div>
         ) : null}
-        <div className="year-scroll">
+        <div className="year-scroll" aria-label="Full year reading calendar">
           <div className="months" style={{ display: "grid", gridTemplateColumns: `repeat(${columns}, 13px)`, gap: 3 }}>
             {Array.from({ length: columns }, (_, col) => {
               const mark = monthMarks.find((mm) => mm.col === col);
@@ -96,11 +86,15 @@ export function YearGrid({ view }: { view: LedgerView }) {
           <div className="grid">
             {cells.map((c, i) =>
               c ? (
-                <div
+                <button
                   className="cell live"
                   key={i}
                   style={{ background: LEVELS[level(c.minutes, calendarMax)] }}
                   onMouseEnter={(e) => show(e, c)}
+                  onFocus={(e) => show(e, c)}
+                  onClick={(e) => show(e, c)}
+                  onBlur={() => setTip(null)}
+                  aria-label={`${shortDate(c.date)}, ${c.minutes ? hm(c.minutes) : "nothing read"}`}
                 />
               ) : (
                 <div className="cell" key={i} style={{ background: "transparent", outline: "none" }} />

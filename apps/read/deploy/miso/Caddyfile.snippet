@@ -7,6 +7,18 @@ read.lolwierd.com {
 	import cloudflare
 	encode gzip
 	root * /home/ubuntu/read/site
+	header {
+		Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'"
+		Referrer-Policy "no-referrer"
+		X-Content-Type-Options "nosniff"
+		Permissions-Policy "camera=(), microphone=(), geolocation=()"
+	}
+	@live path /record.json /years/*
+	header @live Cache-Control "no-cache, must-revalidate"
+	@shell path / /index.html /sw.js
+	header @shell Cache-Control "no-cache, must-revalidate"
+	@assets path /assets/* /covers/* /favicon.svg
+	header @assets Cache-Control "public, max-age=604800"
 	file_server
 }
 

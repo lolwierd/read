@@ -2,22 +2,18 @@
   "name": "read",
   "private": true,
   "type": "module",
+  "packageManager": "pnpm@10.28.2",
   "engines": { "node": ">=20" },
   "scripts": {
     "sync:kobo": "sh scripts/sync-kobo-stats.sh",
     "sync:kobo:ledger": "sh scripts/sync-kobo-stats.sh --build-ledger",
-    "test": "pnpm -r test",
+    "test": "pnpm --filter @read/core --filter @read/read test",
     "test:core": "pnpm --filter @read/core test",
-    "typecheck": "pnpm -r typecheck",
-    "build": "pnpm -r build"
+    "typecheck": "pnpm --filter @read/core --filter @read/read typecheck",
+    "build": "pnpm --filter @read/read build",
+    "legacy:check": "pnpm --filter @read/mcp --filter @read/web typecheck"
   },
   "devDependencies": {
     "typescript": "^5.7.3"
-  },
-  "pnpm": {
-    "overrides": {
-      "cookie": "^0.7.2"
-    },
-    "onlyBuiltDependencies": ["esbuild", "workerd"]
   }
 }

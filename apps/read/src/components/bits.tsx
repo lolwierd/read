@@ -21,7 +21,7 @@ export function Sparkline({ data, w = 220, h = 46 }: { data: number[]; w?: numbe
   const area = `${line} L${w} ${h} L0 ${h} Z`;
   const last = pts[pts.length - 1]!;
   return (
-    <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`} style={{ display: "block", overflow: "visible" }}>
+    <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`} style={{ display: "block", overflow: "visible" }} role="img" aria-label={`Reading over ${data.length} days, from ${Math.round(data[0] ?? 0)} to ${Math.round(data[data.length - 1] ?? 0)} minutes`}>
       <path d={area} fill="var(--teal-wash)" />
       <path d={line} fill="none" stroke="var(--teal)" strokeWidth="1.6" strokeLinejoin="round" strokeLinecap="round" />
       <circle cx={last[0]} cy={last[1]} r="2.6" fill="var(--teal-bright)" />

@@ -21,6 +21,11 @@ export interface Book {
   total_read_pages: number;
   current_chapter: string | null;
   cover_url: string | null;
+  /** Optional Calibre enrichment. The KOReader statistics DB does not carry these. */
+  tags?: string[];
+  publisher?: string | null;
+  published_year?: number | null;
+  series_index?: number | null;
 }
 
 /** One reading session (a KOReader page_stat_data row). */
@@ -73,6 +78,10 @@ export interface BookView {
   coverFallback: string; // CSS colour var for the clothbound spine
   currentChapter: string | null;
   lastOpen: number | null;
+  tags: string[];
+  publisher: string | null;
+  publishedYear: number | null;
+  seriesIndex: number | null;
 }
 
 /** A highlight as rendered in "From the Margins" / pull quote. */

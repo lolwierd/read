@@ -9,11 +9,8 @@ export function NowReading({ view, onSelect }: { view: LedgerView; onSelect: (md
     .filter((b) => b.status === "reading")
     .sort((a, b) => (b.lastOpen ?? 0) - (a.lastOpen ?? 0));
   const primary = view.now ?? reading[0] ?? null;
-  // "Also on the go" only shows books actually touched in the last 3 days; stale ones
-  // drop back to the shelf (the hero stays regardless — it's the book in hand).
-  const recent = view.generatedAt - 3 * 24 * 60 * 60;
   const others = reading
-    .filter((b) => b.md5 !== primary?.md5 && (b.lastOpen ?? 0) >= recent)
+    .filter((b) => b.md5 !== primary?.md5)
     .slice(0, 4);
   const onGo = (primary ? 1 : 0) + others.length;
 

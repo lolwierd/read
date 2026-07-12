@@ -15,6 +15,11 @@ export interface CalBook {
   author: string;
   path: string;
   isbn: string;
+  tags?: string[];
+  publisher?: string | null;
+  publishedYear?: number | null;
+  series?: string | null;
+  seriesIndex?: number | null;
 }
 
 export const normTitle = (t: string): string =>

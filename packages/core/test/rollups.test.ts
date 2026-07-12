@@ -45,10 +45,11 @@ describe("minutesOnDay", () => {
   it("sums only sessions on that IST day", () => {
     const sessions = [
       session("2026-06-01", "10:00:00", 600), // 10 min
-      session("2026-06-01", "23:50:00", 1200), // 20 min, still 06-01 IST
+      session("2026-06-01", "23:50:00", 1200), // 10 min here, 10 min after midnight
       session("2026-05-31", "10:00:00", 600), // other day
     ];
-    expect(minutesOnDay(sessions, "2026-06-01")).toBe(30);
+    expect(minutesOnDay(sessions, "2026-06-01")).toBe(20);
+    expect(minutesOnDay(sessions, "2026-06-02")).toBe(10);
   });
 });
 

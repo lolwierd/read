@@ -15,6 +15,8 @@ What it does:
 - listens for KOReader resume, reader-ready, and network-connected events
 - checks that KOReader Reading Statistics Cloud sync is configured
 - triggers KOReader's built-in `SyncBookStats` event at most once per 24 hours
+- clears KOReader's last-sync cache before merging, making reading history append-only;
+  changing a title or author can no longer be misread as deletion of the old book
 - stores its timer in KOReader settings as `readstatsautosync.lua`
 
 What it does not do:
@@ -24,7 +26,8 @@ What it does not do:
 - it does not sync highlights or sidecars
 - it does not wake the Kobo or turn Wi-Fi on by itself
 
-Manual sync remains available in KOReader:
+KOReader's stock sync identifies books by `(title, authors, md5)`, so metadata edits can
+erase history during its deletion-aware three-way merge. Prefer the helper's **Sync now**:
 
 `Tools -> Reading statistics -> Synchronize now`
 

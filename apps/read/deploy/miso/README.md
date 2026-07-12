@@ -34,11 +34,12 @@ bash apps/read/deploy/miso/deploy.sh      # builds, rsyncs site/, scps build-rec
 ```sh
 scp apps/read/deploy/miso/webdav.yml miso:/home/ubuntu/read/webdav.yml
 # edit the password in that file first!
+ssh miso 'chmod 600 /home/ubuntu/read/webdav.yml'
 ssh miso 'docker run -d --name kobo-webdav --restart unless-stopped \
   -p 127.0.0.1:6065:6065 \
   -v /home/ubuntu/read/webdav:/data \
   -v /home/ubuntu/read/webdav.yml:/config.yml:ro \
-  hacdias/webdav -c /config.yml'
+  hacdias/webdav@sha256:2b708c56b4f36cd75c56d29f22ca1b7bd364782ee15c184182a4187a03538fde -c /config.yml'
 ```
 
 ### 4. Caddy
@@ -53,6 +54,10 @@ ssh miso 'sudo cp /etc/caddy/Caddyfile /etc/caddy/Caddyfile.bak \
 A systemd `.path` unit watches the WebDAV stats DB and rebuilds the moment KOReader
 uploads, so the site is fresh within seconds (the open page polls every 30s + on focus,
 so it updates itself with no manual reload).
+
+`refresh.sh` union-merges each uploaded candidate into a canonical snapshot by book MD5.
+This keeps page history monotonic even when KOReader's deletion-aware cloud merge regresses
+after a title or author edit. `snapshot.previous.sqlite3` is retained as a rollback copy.
 ```sh
 scp apps/read/deploy/miso/read-refresh.{service,path} miso:/tmp/
 ssh miso 'sudo cp /tmp/read-refresh.service /tmp/read-refresh.path /etc/systemd/system/ \

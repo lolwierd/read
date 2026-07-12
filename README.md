@@ -11,8 +11,8 @@ and a static React app serves the resulting `record.json` and covers.
 - `apps/read` - the static reading dashboard and the WebDAV stats builder.
 - `packages/core` - shared KOReader normalization, time helpers, rollups, and schemas.
 - `plugin` - KOReader plugins for pushing or syncing reading data.
-- `apps/mcp` and `apps/web` - earlier Cloudflare/D1 paths retained as reference code.
-- `migrations` - the D1 schema used by the Cloudflare version.
+- `apps/mcp`, `apps/web`, and `migrations` - the earlier Cloudflare/D1 experiment. It is
+  retained as reference code and excluded from the active dashboard checks.
 
 Generated records, covers, real device fixtures, and local build outputs are ignored so
 the repository can stay public without publishing private reading data.
@@ -52,6 +52,9 @@ pnpm --filter @read/read typecheck
 pnpm --filter @read/read build
 pnpm --filter @read/core test
 ```
+
+The repository pins pnpm through `packageManager`; use Corepack so the lockfile and build
+policy are interpreted by the same pnpm release locally and in CI.
 
 Build the production record builder:
 

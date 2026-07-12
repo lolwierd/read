@@ -7,8 +7,8 @@ HOST="${MISO_HOST:-miso}"
 REMOTE="/home/ubuntu/read"
 cd "$(dirname "$0")/../.."   # → apps/read
 
-pnpm run build          # vite → dist/
-pnpm run build:record   # bun --compile → dist-tools/build-record (bun-linux-arm64)
+corepack pnpm run build          # vite → dist/
+corepack pnpm run build:record   # bun --compile → dist-tools/build-record (bun-linux-arm64)
 
 ssh "$HOST" "mkdir -p $REMOTE/site $REMOTE/webdav"
 # Update the app but keep the cron-generated record.json + covers/ in place.

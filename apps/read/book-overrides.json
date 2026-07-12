@@ -1,0 +1,21 @@
+{
+  "9242e1ab99eeb001920cc19f0d9d8419": {
+    "coverFrom": "5017a349c47dbdfff07f9b6a9282db57",
+    "floors": {
+      "totalReadPages": 6828
+    }
+  },
+  "5017a349c47dbdfff07f9b6a9282db57": {
+    "authors": "Eiichiro Oda",
+    "series": "One Piece",
+    "force": true,
+    "floors": {
+      "totalReadTime": 20880,
+      "totalReadPages": 910,
+      "lastOpen": 1783880460
+    },
+    "dayMinutes": {
+      "2026-07-12": 322
+    }
+  }
+}

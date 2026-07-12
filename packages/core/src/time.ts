@@ -29,6 +29,48 @@ export function todayInTz(now: Date, tz: string = READING_TZ): string {
   return dayFormatter(tz).format(now);
 }
 
+const HOUR_FMT_CACHE = new Map<string, Intl.DateTimeFormat>();
+function hourFormatter(tz: string): Intl.DateTimeFormat {
+  let f = HOUR_FMT_CACHE.get(tz);
+  if (f === undefined) {
+    f = new Intl.DateTimeFormat("en-GB", { hour: "2-digit", hour12: false, timeZone: tz });
+    HOUR_FMT_CACHE.set(tz, f);
+  }
+  return f;
+}
+
+export function hourInTz(epochSeconds: number, tz: string = READING_TZ): number {
+  return Number(hourFormatter(tz).format(new Date(epochSeconds * 1000))) % 24;
+}
+
+export interface IntervalBucket {
+  day: string;
+  hour: number;
+  seconds: number;
+}
+
+/** Split an interval at minute boundaries so time crossing an hour or midnight lands in
+ *  the bucket where it was actually spent. Time-zone offsets and DST changes occur on
+ *  minute boundaries in the zones supported by Intl. */
+export function splitInterval(start: number, duration: number, tz: string = READING_TZ): IntervalBucket[] {
+  if (!Number.isFinite(start) || !Number.isFinite(duration) || duration <= 0) return [];
+  const end = start + duration;
+  const totals = new Map<string, IntervalBucket>();
+  let cursor = start;
+  while (cursor < end) {
+    const nextMinute = (Math.floor(cursor / 60) + 1) * 60;
+    const next = Math.min(end, nextMinute);
+    const day = dayInTz(cursor, tz);
+    const hour = hourInTz(cursor, tz);
+    const key = `${day}#${hour}`;
+    const bucket = totals.get(key);
+    if (bucket) bucket.seconds += next - cursor;
+    else totals.set(key, { day, hour, seconds: next - cursor });
+    cursor = next;
+  }
+  return [...totals.values()];
+}
+
 /** Add (or subtract) whole days to a "YYYY-MM-DD" string, returning the same shape. */
 export function addDays(day: string, delta: number): string {
   const [y, m, d] = day.split("-").map(Number);

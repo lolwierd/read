@@ -10,6 +10,9 @@ import { ReadingClock } from "./components/ReadingClock";
 import { RhythmSection } from "./components/RhythmSection";
 import { Shelf } from "./components/Shelf";
 import { BookModal } from "./components/BookModal";
+import { LedgerHead } from "./components/LedgerHead";
+import { WeekStory } from "./components/WeekStory";
+import { AnnualEdition } from "./components/AnnualEdition";
 
 export default function App() {
   const [view, setView] = useState<LedgerView | null>(null);
@@ -49,29 +52,34 @@ export default function App() {
 
   return (
     <main className="shell">
-      <Reveal i={0} className="section">
+      <LedgerHead view={view} />
+      <Reveal i={0} className="section" id="in-hand">
         <NowReading view={view} onSelect={setSelected} />
       </Reveal>
-      <Reveal i={1} className="section">
+      <Reveal i={1} className="section" id="today">
         <TodaySection view={view} />
       </Reveal>
       <Reveal i={2} className="section">
         <Metrics view={view} />
       </Reveal>
-      <Reveal i={3} className="section">
+      <Reveal i={3} className="section" id="week">
         <WeekChart view={view} />
+        <WeekStory view={view} />
       </Reveal>
-      <Reveal i={4} className="section">
+      <Reveal i={4} className="section" id="year">
         <YearGrid view={view} />
       </Reveal>
-      <Reveal i={5} className="section">
+      <Reveal i={5} className="section" id="hours">
         <ReadingClock view={view} />
       </Reveal>
       <Reveal i={6} className="section">
         <RhythmSection view={view} />
       </Reveal>
-      <Reveal i={7} className="section">
+      <Reveal i={7} className="section" id="shelf">
         <Shelf view={view} onSelect={setSelected} />
+      </Reveal>
+      <Reveal i={8} className="section" id="edition">
+        <AnnualEdition view={view} />
       </Reveal>
       <BookModal view={view} md5={selected} onClose={() => setSelected(null)} />
     </main>

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "bun:test";
 
-import { shouldShowStatsBook, type StatsBookRow } from "./from-stats";
+import { booksFromStats, shouldShowStatsBook, type StatsBookRow } from "./from-stats";
 
 function book(overrides: Partial<StatsBookRow> = {}): StatsBookRow {
   return {
@@ -34,6 +34,13 @@ describe("shouldShowStatsBook", () => {
   it("falls back to fixed pages only when page count is missing", () => {
     expect(shouldShowStatsBook(book({ pages: null, total_read_pages: 19 }), 0)).toBe(false);
     expect(shouldShowStatsBook(book({ pages: null, total_read_pages: 20 }), 0)).toBe(true);
+  });
+
+  it("treats null KOReader totals as zero", () => {
+    expect(shouldShowStatsBook(book({ total_read_time: null, total_read_pages: null }), 0)).toBe(false);
+    const [mapped] = booksFromStats([book({ total_read_time: null, total_read_pages: null })], () => null);
+    expect(mapped?.total_read_time).toBe(0);
+    expect(mapped?.total_read_pages).toBe(0);
   });
 
   it("still drops known junk titles", () => {

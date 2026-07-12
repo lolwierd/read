@@ -3,9 +3,10 @@ import type { ReactNode } from "react";
 
 /** One orchestrated page-load: each section rises + fades, staggered by index. Honours
  *  prefers-reduced-motion automatically via the CSS override. */
-export function Reveal({ children, i = 0, className }: { children: ReactNode; i?: number; className?: string }) {
+export function Reveal({ children, i = 0, className, id }: { children: ReactNode; i?: number; className?: string; id?: string }) {
   return (
     <motion.section
+      id={id}
       className={className}
       initial={{ opacity: 0, y: 22 }}
       animate={{ opacity: 1, y: 0 }}

@@ -15,8 +15,8 @@ export interface StatsBookRow {
   pages: number | null;
   md5: string;
   last_open: number | null;
-  total_read_time: number;
-  total_read_pages: number;
+  total_read_time: number | null;
+  total_read_pages: number | null;
 }
 
 export interface StatsSessionRow {
@@ -38,9 +38,12 @@ const naToNull = (s: string | null): string | null => {
   return !v || v.toUpperCase() === "N/A" ? null : v;
 };
 
+const num = (n: number | null): number => n ?? 0;
+
 function hasMeaningfulProgress(b: StatsBookRow): boolean {
-  if (b.pages !== null && b.pages > 0) return b.total_read_pages / b.pages >= MIN_PROGRESS_RATIO;
-  return b.total_read_pages >= MIN_UNKNOWN_PAGE_PROGRESS;
+  const readPages = num(b.total_read_pages);
+  if (b.pages !== null && b.pages > 0) return readPages / b.pages >= MIN_PROGRESS_RATIO;
+  return readPages >= MIN_UNKNOWN_PAGE_PROGRESS;
 }
 
 /** Hide accidental KOReader stat rows (help docs, fonts, test opens) per
@@ -51,7 +54,7 @@ export function shouldShowStatsBook(b: StatsBookRow, sessionCount: number): bool
   if (title === "KOReader Quickstart Guide") return false;
   if (title.toLowerCase().includes("myscript")) return false;
   if (/^chapter\s+\d+$/i.test(title)) return false;
-  return b.total_read_time >= MIN_READ_SECONDS || hasMeaningfulProgress(b) || sessionCount >= MIN_SESSION_ROWS;
+  return num(b.total_read_time) >= MIN_READ_SECONDS || hasMeaningfulProgress(b) || sessionCount >= MIN_SESSION_ROWS;
 }
 
 /** Apply the ignore filter to raw rows up-front: drop junk books and their sessions so no
@@ -75,7 +78,8 @@ export function filterStatsRows(
  *  for an md5 — the only piece that differs between dev and the miso builder. */
 export function booksFromStats(rows: StatsBookRow[], coverUrlFor: (md5: string) => string | null): Book[] {
   return rows.map((r) => {
-    const percent = r.pages && r.pages > 0 ? Math.min(1, r.total_read_pages / r.pages) : 0;
+    const totalReadPages = num(r.total_read_pages);
+    const percent = r.pages && r.pages > 0 ? Math.min(1, totalReadPages / r.pages) : 0;
     return {
       md5: r.md5,
       title: r.title.trim(),
@@ -89,8 +93,8 @@ export function booksFromStats(rows: StatsBookRow[], coverUrlFor: (md5: string) 
       rating: null,
       review: null,
       last_open: r.last_open,
-      total_read_time: r.total_read_time,
-      total_read_pages: r.total_read_pages,
+      total_read_time: num(r.total_read_time),
+      total_read_pages: totalReadPages,
       current_chapter: null,
       cover_url: coverUrlFor(r.md5),
     };
