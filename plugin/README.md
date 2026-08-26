@@ -59,7 +59,7 @@ with:
 It is superseded for v1 by WebDAV raw SQLite sync, but is kept around as a possible future
 base for sidecars/highlights.
 
-Pushes your reading data to the ledger (`ledger.lolwierd.com/ingest`) from the Kobo. It
+Pushes your reading data to your ledger server (`https://your-ledger.example/ingest`) from the Kobo. It
 reads KOReader's own `statistics.sqlite3` (totals + sessions) and each book's `.sdr`
 sidecar (progress, doc_props, highlights + notes), merges them by KOReader's partial-md5,
 and POSTs one JSON payload to `<server>/ingest` with a bearer token. Re-sending is always
@@ -72,7 +72,7 @@ safe (server upserts by md5, dedupes sessions/annotations).
    `.adds/koreader/plugins/read.koplugin/`  (on a Kobo, KOReader lives under `.adds`).
 3. Eject, reopen KOReader.
 4. **☰ menu → Tools → Reading Record sync**:
-   - **Set server URL** → `https://ledger.lolwierd.com`
+   - **Set server URL** → your ledger server URL, for example `https://read.example.com`
    - **Set token** → the `INGEST_TOKEN` (same value set as the ledger Worker secret)
    - optionally enable **Auto-sync on Wi-Fi connect**
 5. **Sync now**. You should see `Synced: N books · N sessions · N highlights`.

@@ -5,7 +5,7 @@ compatibility_flags = ["nodejs_compat"]
 account_id = "YOUR_CLOUDFLARE_ACCOUNT_ID"
 workers_dev = false
 
-routes = [{ pattern = "read-mcp.lolwierd.com", custom_domain = true }]
+routes = [{ pattern = "read-mcp.example.com", custom_domain = true }]
 
 [observability]
 enabled = true

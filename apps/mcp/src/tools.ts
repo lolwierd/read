@@ -28,7 +28,7 @@ function tool<S extends z.ZodType<unknown>>(
 }
 
 const statusEnum = z.enum(["unread", "reading", "finished", "paused", "abandoned"]);
-const WEB = "https://read.lolwierd.com";
+const WEB = "https://read.example.com";
 
 export const TOOLS: ToolDef[] = [
   tool(

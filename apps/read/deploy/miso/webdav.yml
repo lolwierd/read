@@ -1,6 +1,6 @@
 # hacdias/webdav config — the WebDAV target KOReader's "Reading statistics → Cloud sync"
 # uploads statistics.sqlite3 to. Stored at /home/ubuntu/read/webdav on miso, behind
-# Caddy (dav.lolwierd.com) with TLS. Change the password before use.
+# Caddy (dav.example.com) with TLS. Change the password before use.
 address: 0.0.0.0
 port: 6065
 directory: /data

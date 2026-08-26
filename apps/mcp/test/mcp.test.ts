@@ -170,7 +170,7 @@ describe("covers (R2)", () => {
     expect(stored?.n).toBe(fakeJpeg.byteLength);
 
     const row = await env.DB.prepare("SELECT cover_url FROM books WHERE md5='abc123'").first<{ cover_url: string }>();
-    expect(row?.cover_url).toBe("https://read.lolwierd.com/cover/abc123");
+    expect(row?.cover_url).toBe("https://read.example.com/cover/abc123");
 
     const list = await SELF.fetch("https://read-mcp.test/covers", {
       headers: { Authorization: "Bearer test-token" },

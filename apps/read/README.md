@@ -32,7 +32,7 @@ Kobo / KOReader  ──WebDAV(HTTPS)──▶  miso:.../ledger/webdav/statistics
                           miso:.../ledger/site/{index.html, record.json, covers/}
                                           │  Caddy file_server
                                           ▼
-                              https://read.lolwierd.com
+                              https://read.example.com
 ```
 
 - `src/` — React + Vite SPA. Fetches `/record.dev.json` in dev, `/record.json` in prod.
@@ -65,7 +65,8 @@ this all happens inside `build-record` on miso (local Calibre, no ssh).
 
 See **`deploy/miso/README.md`** — one script (`deploy/miso/deploy.sh`) pushes the app +
 arm64 builder to miso; a short one-time setup adds the WebDAV container, two Caddy blocks,
-and the cron. Then point KOReader's stats Cloud-sync at `https://dav.lolwierd.com`.
+and the cron. Then point KOReader's stats Cloud-sync at your WebDAV URL, for example
+`https://dav.example.com`.
 
 ## Scope
 

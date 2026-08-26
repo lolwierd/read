@@ -16,6 +16,7 @@ apps/read/public/record*.json
 apps/read/dist/
 apps/read/dist-tools/
 apps/read/finished-history.json
+apps/read/miso-backup/
 fixtures/real/
 
 # Internal planning notes

@@ -19,7 +19,7 @@ export interface Bindings {
   INGEST_TOKEN: string;
 }
 
-const WEB_ORIGIN = "https://read.lolwierd.com";
+const WEB_ORIGIN = "https://read.example.com";
 const isHexMd5 = (s: string): boolean => /^[a-f0-9]{6,64}$/i.test(s);
 
 interface UserProps {

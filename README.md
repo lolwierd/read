@@ -15,7 +15,9 @@ and a static React app serves the resulting `record.json` and covers.
   retained as reference code and excluded from the active dashboard checks.
 
 Generated records, covers, real device fixtures, and local build outputs are ignored so
-the repository can stay public without publishing private reading data.
+the repository can stay public without publishing private reading data. The repository
+contains source code and synthetic test fixtures only; generate your own record locally
+before running the dashboard.
 
 ## Current stats filtering
 
@@ -73,3 +75,9 @@ The WebDAV deployment lives under `apps/read/deploy/miso`. It assumes:
 
 Use the deployment files as templates and replace hostnames, paths, and passwords for
 your own setup before running anything on a public server.
+
+## License
+
+The project code is released into the public domain under the Unlicense. Third-party
+dependencies, fonts, and cover artwork retain their own licenses; the repository does
+not include generated personal reading data or downloaded cover images.

@@ -1,8 +1,8 @@
 --[[
 Reading Record sync — a KOReader plugin.
 
-Assembles a JSON payload from KOReader's own data and POSTs it to
-read.lolwierd.com/ingest (Bearer token). Two data sources, merged by KOReader's
+Assembles a JSON payload from KOReader's own data and POSTs it to the configured
+ledger server's /ingest endpoint (Bearer token). Two data sources, merged by KOReader's
 partial-md5 (stable per file):
 
   • statistics.sqlite3  → per-book totals + every reading session (page_stat_data)
@@ -69,7 +69,7 @@ function ReadSync:addToMainMenu(menu_items)
                 text = _("Set server URL"),
                 keep_menu_open = true,
                 callback = function()
-                    self:editSetting("server", _("Server URL (e.g. https://read-mcp.lolwierd.com)"))
+                    self:editSetting("server", _("Server URL (e.g. https://read.example.com)"))
                 end,
             },
             {

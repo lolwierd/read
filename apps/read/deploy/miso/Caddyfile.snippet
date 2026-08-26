@@ -3,7 +3,7 @@
 # Then: `caddy validate --config /etc/caddy/Caddyfile && sudo systemctl reload caddy`.
 
 # ── read — static reading-stats dashboard (record.json built by cron) ──
-read.lolwierd.com {
+read.example.com {
 	import cloudflare
 	encode gzip
 	root * /home/ubuntu/read/site
@@ -23,7 +23,7 @@ read.lolwierd.com {
 }
 
 # ── WebDAV target for KOReader "Reading statistics → Cloud sync" ──
-dav.lolwierd.com {
+dav.example.com {
 	import cloudflare
 	reverse_proxy 127.0.0.1:6065
 }

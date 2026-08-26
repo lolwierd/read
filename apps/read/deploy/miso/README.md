@@ -12,7 +12,7 @@ Kobo / KOReader  ──WebDAV(HTTPS)──▶  miso:/home/ubuntu/read/webdav/sta
                           miso:/home/ubuntu/read/site/{index.html, record.json, covers/}
                                           │  Caddy file_server
                                           ▼
-                              https://read.lolwierd.com   (the dashboard)
+                              https://read.example.com   (the dashboard)
 ```
 
 miso facts this is built around: **arm64 / Ubuntu 22.04**, Caddy (Cloudflare DNS-TLS),
@@ -22,8 +22,8 @@ so nothing needs installing on miso.
 ## One-time setup
 
 ### 1. DNS (Cloudflare)
-Add `read.lolwierd.com` and `dav.lolwierd.com` → miso (same as your other subdomains;
-skip if you have a `*.lolwierd.com` record).
+Add your dashboard and WebDAV hostnames, for example `read.example.com` and
+`dav.example.com`, pointing to miso.
 
 ### 2. App + builder
 ```sh
@@ -69,7 +69,7 @@ ssh miso '( crontab -l 2>/dev/null; echo "0 */2 * * * /home/ubuntu/read/refresh.
 ### 6. Kobo / KOReader
 Enable the **Statistics** plugin (on by default). Then **☰ → Statistics → Settings →
 Cloud sync** (or Reading-statistics sync) → **WebDAV**:
-- Address: `https://dav.lolwierd.com`
+- Address: `https://dav.example.com`
 - User / pass: from `webdav.yml`
 - Sync now.
 

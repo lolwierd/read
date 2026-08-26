@@ -14,7 +14,7 @@ import { matchCalibre, searchTitle, skipWeb, webCover, type CalBook, type KoBook
 
 const SSH_HOST = process.env.MISO_HOST ?? "miso";
 const LIB = process.env.CALIBRE_LIB ?? "/home/ubuntu/media/books/calibre-library";
-const BASE = process.env.READ_MCP_BASE ?? "https://ledger.lolwierd.com";
+const BASE = process.env.READ_MCP_BASE ?? "https://read.example.com";
 
 const HERE = new URL(".", import.meta.url).pathname;
 const FIXTURE = `${HERE}../../../fixtures/real/statistics.sqlite3`;
